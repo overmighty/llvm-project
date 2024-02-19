@@ -361,8 +361,7 @@ struct DefinedOperator {
     using WrapperTrait = std::true_type;
     Object v;
   };
-  ENUM_CLASS(IntrinsicOperator, Power, Multiply, Divide, Add, Subtract, Concat,
-             LT, LE, EQ, NE, GE, GT, NOT, AND, OR, EQV, NEQV)
+  using IntrinsicOperator = Fortran::parser::DefinedOperator::IntrinsicOperator;
   using UnionTrait = std::true_type;
   std::variant<DefinedOpName, IntrinsicOperator> u;
 };
@@ -554,10 +553,10 @@ Copyprivate make(const parser::OmpClause::Copyprivate &inp,
 }
 
 struct Defaultmap {
-  ENUM_CLASS(ImplicitBehavior, Alloc, To, From, Tofrom, Firstprivate, None,
-             Default)
-  ENUM_CLASS(VariableCategory, Scalar, Aggregate, Allocatable, Pointer)
-  using TupleTrait = std::true_type;
+  using ImplicitBehavior =
+      Fortran::parser::OmpDefaultmapClause::ImplicitBehavior;
+  using VariableCategory =
+      Fortran::parser::OmpDefaultmapClause::VariableCategory;
   std::tuple<ImplicitBehavior, std::optional<VariableCategory>> t;
 };
 
@@ -576,7 +575,7 @@ Defaultmap make(const parser::OmpClause::Defaultmap &inp,
 }
 
 struct Default {
-  ENUM_CLASS(Type, Private, Firstprivate, Shared, None)
+  using Type = Fortran::parser::OmpDefaultClause::Type;
   using WrapperTrait = std::true_type;
   Type v;
 };
@@ -597,7 +596,7 @@ struct Depend {
     using WrapperTrait = std::true_type;
     List<Vec> v;
   };
-  ENUM_CLASS(Type, In, Out, Inout, Source, Sink)
+  using Type = Fortran::parser::OmpDependenceType::Type;
   struct InOut {
     using TupleTrait = std::true_type;
     std::tuple<Type, ObjectList> t;
@@ -644,7 +643,7 @@ Depend make(const parser::OmpClause::Depend &inp,
 }
 
 struct Device {
-  ENUM_CLASS(DeviceModifier, Ancestor, Device_Num)
+  using DeviceModifier = Fortran::parser::OmpDeviceClause::DeviceModifier;
   using TupleTrait = std::true_type;
   std::tuple<std::optional<DeviceModifier>, SomeExpr> t;
 };
@@ -663,7 +662,7 @@ Device make(const parser::OmpClause::Device &inp,
 }
 
 struct DeviceType {
-  ENUM_CLASS(Type, Any, Host, Nohost)
+  using Type = Fortran::parser::OmpDeviceTypeClause::Type;
   using WrapperTrait = std::true_type;
   Type v;
 };
@@ -774,9 +773,8 @@ Hint make(const parser::OmpClause::Hint &inp,
 }
 
 struct If {
-  ENUM_CLASS(DirectiveNameModifier, Parallel, Simd, Target, TargetData,
-             TargetEnterData, TargetExitData, TargetUpdate, Task, Taskloop,
-             Teams)
+  using DirectiveNameModifier =
+      Fortran::parser::OmpIfClause::DirectiveNameModifier;
   using TupleTrait = std::true_type;
   std::tuple<std::optional<DirectiveNameModifier>, SomeExpr> t;
 };
@@ -831,7 +829,7 @@ Lastprivate make(const parser::OmpClause::Lastprivate &inp,
 
 struct Linear {
   struct Modifier {
-    ENUM_CLASS(Type, Ref, Val, Uval)
+    using Type = Fortran::parser::OmpLinearModifier::Type;
     using WrapperTrait = std::true_type;
     Type v;
   };
@@ -876,7 +874,7 @@ struct Map {
     struct Always {
       using EmptyTrait = std::true_type;
     };
-    ENUM_CLASS(Type, To, From, Tofrom, Alloc, Release, Delete)
+    using Type = Fortran::parser::OmpMapType::Type;
     using TupleTrait = std::true_type;
     std::tuple<std::optional<Always>, Type> t;
   };
@@ -990,8 +988,8 @@ Ordered make(const parser::OmpClause::Ordered &inp,
 }
 
 struct Order {
-  ENUM_CLASS(Kind, Reproducible, Unconstrained)
-  ENUM_CLASS(Type, Concurrent)
+  using Kind = Fortran::parser::OmpOrderModifier::Kind;
+  using Type = Fortran::parser::OmpOrderClause::Type;
   using TupleTrait = std::true_type;
   std::tuple<std::optional<Kind>, Type> t;
 };
@@ -1043,7 +1041,7 @@ Private make(const parser::OmpClause::Private &inp,
 }
 
 struct ProcBind {
-  ENUM_CLASS(Type, Close, Master, Spread, Primary)
+  using Type = Fortran::parser::OmpProcBindClause::Type;
   using WrapperTrait = std::true_type;
   Type v;
 };
@@ -1079,12 +1077,12 @@ Safelen make(const parser::OmpClause::Safelen &inp,
 }
 
 struct Schedule {
-  ENUM_CLASS(ModType, Monotonic, Nonmonotonic, Simd)
+  using ModType = Fortran::parser::OmpScheduleModifierType::ModType;
   struct ScheduleModifier {
     using TupleTrait = std::true_type;
     std::tuple<ModType, std::optional<ModType>> t;
   };
-  ENUM_CLASS(ScheduleType, Static, Dynamic, Guided, Auto, Runtime)
+  using ScheduleType = Fortran::parser::OmpScheduleClause::ScheduleType;
   using TupleTrait = std::true_type;
   std::tuple<std::optional<ScheduleModifier>, ScheduleType, MaybeExpr> t;
 };
