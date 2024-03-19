@@ -242,7 +242,7 @@ LIBC_INLINE T round_using_current_rounding_mode(T x) {
 
 template <bool IsSigned, typename T,
           cpp::enable_if_t<cpp::is_floating_point_v<T>, int> = 0>
-LIBC_INLINE T fromfp(T x, int rnd, unsigned int width) {
+LIBC_INLINE constexpr T fromfp(T x, int rnd, unsigned int width) {
   T rounded_value = round_using_specific_rounding_mode(x, rnd);
 
   if constexpr (IsSigned) {
@@ -258,15 +258,14 @@ LIBC_INLINE T fromfp(T x, int rnd, unsigned int width) {
   if (rounded_value < T(0.0))
     return FPBits<T>::quiet_nan();
   // T can't hold a finite number >= 2.0 * 2^EXP_BIAS == 2^(EXP_BIAS + 1).
-  if (width > FPBits<T>::EXP_BIAS)
-    return rounded_value;
-  if (rounded_value > T((1U << width)) - 1U)
+  if (width <= FPBits<T>::EXP_BIAS && rounded_value > T(1U << width) - 1U)
     return FPBits<T>::quiet_nan();
+  return rounded_value;
 }
 
 template <bool IsSigned, typename T,
           cpp::enable_if_t<cpp::is_floating_point_v<T>, int> = 0>
-LIBC_INLINE T fromfpx(T x, int rnd, unsigned int width) {
+LIBC_INLINE constexpr T fromfpx(T x, int rnd, unsigned int width) {
   T rounded_value = fromfp<IsSigned>(x, rnd, width);
   FPBits<T> bits(rounded_value);
 
