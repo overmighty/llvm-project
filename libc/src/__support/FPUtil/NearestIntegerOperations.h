@@ -166,6 +166,9 @@ LIBC_INLINE constexpr T round_using_specific_rounding_mode(T x, int rnd) {
     case FP_INT_TOWARDZERO:
       return is_neg ? T(-0.0) : T(0.0);
     case FP_INT_TONEARESTFROMZERO:
+      if (exponent < -1)
+        return is_neg ? T(-0.0) : T(0.0); // abs(x) < 0.5
+      return is_neg ? T(-1.0) : T(1.0);   // abs(x) >= 0.5
     case FP_INT_TONEAREST:
     default:
       if (exponent <= -2 || bits.get_mantissa() == 0)
@@ -203,7 +206,6 @@ LIBC_INLINE constexpr T round_using_specific_rounding_mode(T x, int rnd) {
   case FP_INT_TONEARESTFROMZERO:
     if (trim_value >= half_value)
       return is_neg ? trunc_value - T(1.0) : trunc_value + T(1.0);
-
     return trunc_value;
   case FP_INT_TONEAREST:
   default:
@@ -243,23 +245,27 @@ LIBC_INLINE T round_using_current_rounding_mode(T x) {
 template <bool IsSigned, typename T,
           cpp::enable_if_t<cpp::is_floating_point_v<T>, int> = 0>
 LIBC_INLINE constexpr T fromfp(T x, int rnd, unsigned int width) {
+  if (width == 0U)
+    return FPBits<T>::quiet_nan().get_val();
+
   T rounded_value = round_using_specific_rounding_mode(x, rnd);
 
   if constexpr (IsSigned) {
-    // T can't hold a finite number >= 2.0 * 2^EXP_BIAS == 2^(EXP_BIAS + 1).
+    // T can't hold a finite number >= 2.0 * 2^EXP_BIAS.
     if (width - 1 > FPBits<T>::EXP_BIAS)
       return rounded_value;
     if (rounded_value < -T(1U << (width - 1U)))
-      return FPBits<T>::quiet_nan();
+      return FPBits<T>::quiet_nan().get_val();
     if (rounded_value > T((1U << (width - 1U)) - 1U))
-      return FPBits<T>::quiet_nan();
+      return FPBits<T>::quiet_nan().get_val();
+    return rounded_value;
   }
 
   if (rounded_value < T(0.0))
-    return FPBits<T>::quiet_nan();
-  // T can't hold a finite number >= 2.0 * 2^EXP_BIAS == 2^(EXP_BIAS + 1).
+    return FPBits<T>::quiet_nan().get_val();
+  // T can't hold a finite number >= 2.0 * 2^EXP_BIAS.
   if (width <= FPBits<T>::EXP_BIAS && rounded_value > T(1U << width) - 1U)
-    return FPBits<T>::quiet_nan();
+    return FPBits<T>::quiet_nan().get_val();
   return rounded_value;
 }
 
